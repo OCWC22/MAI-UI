@@ -21,6 +21,7 @@
 - [🏆 Results](#-results)
 - [🎥 Demo](#-demo)
 - [🚀 Quick Start](#-installation--quick-start)
+- [⚡ Optimization & Examples](#-optimization--examples)
 - [📝 Citation](#-citation)
 - [📧 Contact](#-contact)
 - [📄 License](#-license)
@@ -188,6 +189,60 @@ python -m vllm.entrypoints.openai.api_server \
 > - Adjust `--tensor-parallel-size` based on your GPU count for multi-GPU inference
 > - The model will be served at `http://localhost:8000/v1`
 
+#### GPU-Specific Optimized Commands
+
+<details>
+<summary><b>🎯 Google Colab (Free T4 - 16GB)</b></summary>
+
+```bash
+python -m vllm.entrypoints.openai.api_server \
+    --model Tongyi-MAI/MAI-UI-2B \
+    --served-model-name MAI-UI-2B \
+    --port 8000 \
+    --trust-remote-code \
+    --dtype half \
+    --max-model-len 2048 \
+    --gpu-memory-utilization 0.90 \
+    --enforce-eager \
+    --max-num-seqs 4 \
+    --mm-processor-kwargs '{"max_pixels": 512000}'
+```
+</details>
+
+<details>
+<summary><b>✨ L4/A10G (24GB)</b></summary>
+
+```bash
+python -m vllm.entrypoints.openai.api_server \
+    --model Tongyi-MAI/MAI-UI-8B \
+    --served-model-name MAI-UI-8B \
+    --port 8000 \
+    --trust-remote-code \
+    --dtype half \
+    --max-model-len 4096 \
+    --gpu-memory-utilization 0.90 \
+    --max-num-seqs 8
+```
+</details>
+
+<details>
+<summary><b>🚀 A100 (40GB/80GB)</b></summary>
+
+```bash
+python -m vllm.entrypoints.openai.api_server \
+    --model Tongyi-MAI/MAI-UI-8B \
+    --served-model-name MAI-UI-8B \
+    --port 8000 \
+    --trust-remote-code \
+    --dtype bfloat16 \
+    --max-model-len 8192 \
+    --gpu-memory-utilization 0.92 \
+    --max-num-seqs 16
+```
+</details>
+
+> 📖 **For detailed optimization guides, see [docs/OPTIMIZATION.md](docs/OPTIMIZATION.md) and [examples/](examples/)**
+
 ### Step 3: Install Dependencies
 
 ```bash
@@ -247,6 +302,52 @@ agent = MAIUINaivigationAgent(
     },
 )
 ```
+
+---
+
+## ⚡ Optimization & Examples
+
+We provide GPU-optimized configurations and examples for running MAI-UI efficiently:
+
+### Optimized Server Configs
+
+```bash
+# Make scripts executable
+chmod +x examples/server_configs/*.sh
+
+# T4 (Colab Free - 16GB)
+./examples/server_configs/t4_server.sh 2b
+
+# L4 (Colab Pro - 24GB)  
+./examples/server_configs/l4_server.sh 8b
+
+# A100 (40GB/80GB)
+./examples/server_configs/a100_server.sh 8b
+```
+
+### Colab Notebook
+
+Copy cells from `examples/t4_optimized/mai_ui_t4_colab.py` into Google Colab for a ready-to-run T4-optimized setup.
+
+### Benchmark Your Setup
+
+```bash
+# Compare different configurations
+python examples/benchmarks/compare_configs.py --gpu-memory 16
+
+# Benchmark inference performance
+python examples/benchmarks/benchmark_inference.py --model MAI-UI-2B
+```
+
+### GPU Compatibility
+
+| GPU | VRAM | MAI-UI-2B | MAI-UI-8B |
+|-----|------|-----------|-----------|
+| T4 | 16GB | ✅ FP16 | ⚠️ 4-bit quantization |
+| L4 | 24GB | ✅ FP16 | ✅ FP16 |
+| A100 | 40/80GB | ✅ BF16 | ✅ BF16 |
+
+📖 **Full optimization guide**: [docs/OPTIMIZATION.md](docs/OPTIMIZATION.md)
 
 ---
 
